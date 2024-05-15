@@ -36,4 +36,4 @@ services:
       - .:/app
     depends_on:
       - db
-    command: ["sh", "migrate.sh"]
+    command: ["sh", "startup_migrate.sh"]
