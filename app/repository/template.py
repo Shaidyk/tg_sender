@@ -11,7 +11,7 @@ class TemplateRepository:
     @classmethod
     async def list(cls, **kwargs):
         async with db_session() as session:
-            query = select(Template).options(joinedload(Template.files), joinedload(Template.offer_statuses))
+            query = select(Template).options(joinedload(Template.files), joinedload(Template.order_statuses))
 
             for key, value in kwargs.items():
                 if hasattr(Template, key):

@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from app.db.models import Client, OfferStatus
+from app.db.models import Client, OrderStatus
 from app.db.session import db_session
 
 
@@ -11,7 +11,7 @@ class ClientRepository:
     async def list(cls, **kwargs):
         async with db_session() as session:
             query = select(Client).options(
-                joinedload(Client.offer_statuses).joinedload(OfferStatus.offer)
+                joinedload(Client.order_statuses).joinedload(OrderStatus.order)
             )
             for key, value in kwargs.items():
                 if hasattr(Client, key):

@@ -14,7 +14,7 @@ class Client(BaseModel):
     username: Mapped[str] = Column(String, index=True)
     phone: Mapped[str] = Column(String, index=True)
 
-    offer_statuses: Mapped[List["OfferStatus"]] = relationship("OfferStatus", back_populates="client",
+    order_statuses: Mapped[List["OrderStatus"]] = relationship("OrderStatus", back_populates="client",
                                                                cascade="all, delete-orphan",
                                                                lazy='joined')
 
@@ -42,7 +42,7 @@ class Template(BaseModel):
     files: Mapped[List["File"]] = relationship("File", back_populates="template", cascade="all, delete-orphan",
                                                lazy='joined')
 
-    offer_statuses: Mapped[List["OfferStatus"]] = relationship("OfferStatus", back_populates="template",
+    order_statuses: Mapped[List["OrderStatus"]] = relationship("OrderStatus", back_populates="template",
                                                                cascade="all, delete-orphan",
                                                                lazy='joined')
 
@@ -56,32 +56,32 @@ class File(BaseModel):
     template: Mapped["Template"] = relationship("Template", back_populates="files")
 
 
-class Offer(BaseModel):
-    __tablename__ = 'offer'
+class Order(BaseModel):
+    __tablename__ = 'order'
     id: Mapped[int] = Column(Integer, primary_key=True)
     initiator_telegram_id: Mapped[int] = Column(BigInteger, nullable=False)
     username: Mapped[str] = Column(String(255), nullable=True)
 
-    offer_statuses: Mapped[List["OfferStatus"]] = relationship("OfferStatus", back_populates="offer",
+    order_statuses: Mapped[List["OrderStatus"]] = relationship("OrderStatus", back_populates="order",
                                                                cascade="all, delete-orphan",
                                                                lazy='joined')
 
 
-class OfferStatus(BaseModel):
-    __tablename__ = 'offer_status'
+class OrderStatus(BaseModel):
+    __tablename__ = 'order_status'
     id: Mapped[int] = Column(Integer, primary_key=True)
     message_datetime: Mapped[datetime] = Column(DateTime, nullable=False, default=datetime.now())
     is_successful: Mapped[bool] = Column(Boolean, nullable=False)
     unsuccessful_reason: Mapped[str] = Column(String, nullable=True)
 
-    offer_id: Mapped[int] = Column(Integer, ForeignKey('offer.id', ondelete="CASCADE"))
-    offer: Mapped["Offer"] = relationship("Offer", back_populates="offer_statuses")
+    order_id: Mapped[int] = Column(Integer, ForeignKey('order.id', ondelete="CASCADE"))
+    order: Mapped["Order"] = relationship("Order", back_populates="order_statuses")
 
     client_id: Mapped[int] = Column(Integer, ForeignKey('client.id', ondelete="CASCADE"))
-    client: Mapped["Client"] = relationship("Client", back_populates="offer_statuses")
+    client: Mapped["Client"] = relationship("Client", back_populates="order_statuses")
 
     template_id: Mapped[int] = Column(Integer, ForeignKey('template.id', ondelete="CASCADE"))
-    template: Mapped["Template"] = relationship("Template", back_populates="offer_statuses")
+    template: Mapped["Template"] = relationship("Template", back_populates="order_statuses")
 
 
 class TgAdmin(BaseModel):

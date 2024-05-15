@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class ClientBase(BaseModel):
     username: str
     phone: str
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
 
 class ClientCreate(ClientBase):
@@ -18,7 +18,7 @@ class Client(ClientBase):
     id: int
     username: str
     phone: str
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
     class Config:
         orm_mode = True
@@ -54,7 +54,7 @@ class TemplateBase(BaseModel):
     is_archived: bool = False
     file_name: str
     files: List['File']
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
 
 class TemplateCreate(TemplateBase):
@@ -68,7 +68,7 @@ class Template(TemplateBase):
     is_active: bool = False
     is_archived: bool = False
     files: List['File']
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
     class Config:
         orm_mode = True
@@ -96,33 +96,33 @@ class File(FileBase):
         orm_mode = True
 
 
-class OfferBase(BaseModel):
+class OrderBase(BaseModel):
     initiator_telegram_id: int
     username: str
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
 
-class OfferCreate(OfferBase):
+class OrderCreate(OrderBase):
     pass
 
 
-class Offer(OfferBase):
+class Order(OrderBase):
     id: int
     initiator_telegram_id: int
     username: str
-    offer_statuses: List['OfferStatus']
+    order_statuses: List['OrderStatus']
 
     class Config:
         orm_mode = True
 
 
-class OfferStatusBase(BaseModel):
+class OrderStatusBase(BaseModel):
     message_datetime: str
     is_successful: bool
     unsuccessful_reason: str
 
-    offer_id: int
-    offer: 'Offer'
+    order_id: int
+    order: 'Order'
 
     client_id: int
     client: 'Client'
@@ -131,18 +131,18 @@ class OfferStatusBase(BaseModel):
     template: 'Template'
 
 
-class OfferStatusCreate(OfferStatusBase):
+class OrderStatusCreate(OrderStatusBase):
     pass
 
 
-class OfferStatus(OfferStatusBase):
+class OrderStatus(OrderStatusBase):
     id: int
     message_datetime: str
     is_successful: bool
     unsuccessful_reason: str
 
-    offer_id: int
-    offer: 'Offer'
+    order_id: int
+    order: 'Order'
 
     client_id: int
     client: 'Client'
@@ -160,11 +160,11 @@ class TgAdminBase(BaseModel):
     bot_chat_id: int
 
 
-class TgAdminCreate(OfferStatusBase):
+class TgAdminCreate(OrderStatusBase):
     pass
 
 
-class TgAdminStatus(OfferStatusBase):
+class TgAdminStatus(OrderStatusBase):
     id: int
     telegram_id: int
     username: str

@@ -19,8 +19,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputFile,
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.repository.client import ClientRepository
-from app.repository.offer import OfferRepository
-from app.repository.offer_status import OfferStatusRepository
+from app.repository.order import OrderRepository
+from app.repository.order_status import OrderStatusRepository
 from app.repository.template import TemplateRepository
 from app.repository.tg_admin import TgAdminRepository
 from app.tg_bot.utils import get_cancel_kb, inline_paginator, get_template_action_keyboard
@@ -465,14 +465,14 @@ class BotHandlers:
         templates = await TemplateRepository.get_available_templates()
         user_id = context.from_user.id
         username = context.from_user.username if context.from_user.username else None
-        offer = await OfferRepository.create(initiator_telegram_id=user_id, username=username)
+        order = await OrderRepository.create(initiator_telegram_id=user_id, username=username)
         await context.bot.send_message(chat_id=context.from_user.id,
-                                       text=f"Началась рассылка сообщений для ордера {offer.id}")
-        asyncio.create_task(self.send_messages_to_all_clients(clients, templates, user_id, offer))  # noqa
+                                       text=f"Началась рассылка сообщений для ордера {order.id}")
+        asyncio.create_task(self.send_messages_to_all_clients(clients, templates, user_id, order))  # noqa
         await context.answer()
 
     async def send_messages_to_all_clients(self, clients: List[models.Client], templates: List[models.Template],
-                                           user_id, offer: models.Offer):
+                                           user_id, order: models.Order):
         sender = TgSenderManager()
         while clients:
             client = clients.pop(0)
@@ -481,17 +481,17 @@ class BotHandlers:
             if status_message.get("status") == 403 or status_message.get("status") == 401:
                 clients.append(client)
             elif status_message.get("status") == 200:
-                await OfferStatusRepository.create(
+                await OrderStatusRepository.create(
                     is_successful=True,
-                    offer_id=offer.id,
+                    order_id=order.id,
                     client_id=client.id,
                     template_id=template.id
                 )
             else:
-                await OfferStatusRepository.create(
+                await OrderStatusRepository.create(
                     is_successful=False,
                     unsuccessful_reason=status_message.get("message"),
-                    offer_id=offer.id,
+                    order_id=order.id,
                     client_id=client.id,
                     template_id=template.id
                 )

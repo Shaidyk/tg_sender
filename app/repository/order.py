@@ -1,57 +1,57 @@
 from sqlalchemy import select, delete
 from sqlalchemy.orm import joinedload
 
-from app.db.models import Offer
+from app.db.models import Order
 from app.db.session import db_session
 
 
-class OfferRepository:
+class OrderRepository:
     @classmethod
     async def list(cls, **kwargs):
         async with db_session() as session:
-            query = select(Offer).options(joinedload(Offer.offer_statuses))
+            query = select(Order).options(joinedload(Order.order_statuses))
 
             for key, value in kwargs.items():
-                if hasattr(Offer, key):
-                    query = query.filter(getattr(Offer, key) == value)
+                if hasattr(Order, key):
+                    query = query.filter(getattr(Order, key) == value)
 
             result = await session.execute(query)
             return result.scalars().unique().all()
 
     @classmethod
-    async def get(cls, offer_id: int):
+    async def get(cls, order_id: int):
         async with db_session() as session:
-            result = await session.execute(select(Offer).filter(Offer.id == offer_id))
+            result = await session.execute(select(Order).filter(Order.id == order_id))
             return result.scalars().first()
 
     @classmethod
     async def update(cls, template_id: int, **kwargs):
         async with db_session() as session:
-            result = await session.execute(select(Offer).filter(Offer.id == template_id))
-            offer = result.scalar()
-            if offer is None:
+            result = await session.execute(select(Order).filter(Order.id == template_id))
+            order = result.scalar()
+            if order is None:
                 raise ValueError("Template not found")
 
             for key, value in kwargs.items():
-                if hasattr(Offer, key):
-                    setattr(offer, key, value)
+                if hasattr(Order, key):
+                    setattr(order, key, value)
 
             await session.commit()
-            return offer
+            return order
 
     @classmethod
     async def create(cls, **kwargs):
         async with db_session() as session:
-            new_offer = Offer(**kwargs)
-            session.add(new_offer)
+            new_order = Order(**kwargs)
+            session.add(new_order)
 
             await session.commit()
-            await session.refresh(new_offer)
-            return new_offer
+            await session.refresh(new_order)
+            return new_order
 
     @classmethod
-    async def delete(cls, offer_id: int):
+    async def delete(cls, order_id: int):
         async with db_session() as session:
-            result = await session.execute(delete(Offer).where(Offer.id == offer_id))
+            result = await session.execute(delete(Order).where(Order.id == order_id))
             await session.commit()
             return result.rowcount
