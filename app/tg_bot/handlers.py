@@ -156,9 +156,8 @@ class BotHandlers:
                 if username:
                     username = self.escape_markdown(username)
                 print(from_user, user_id, username)
-                # user_link = f"@{username}" if username else f"[User](tg://user?id={user_id})"
-                user_link = f"[@{username}](tg://user?id={user_id})" if username else f"[user id: {user_id}](tg://user?id={user_id})"
-                user_mention = f"New message from {user_link} ⬆"
+                client = await ClientRepository.get_client_by_tg_id(telegram_id=user_id)
+                user_link = f"New message from: t.me/{client.phone} ⬆"
 
                 # Формируем текст сообщения
                 message_text = (
@@ -208,8 +207,8 @@ class BotHandlers:
                             os.remove(document['file_path'])  # Удаляем файл после отправки
 
                     if not media:
-                        await self.bot.send_message(chat_id=chat_id, text=message_text, parse_mode='Markdown')
-                    await self.bot.send_message(chat_id=chat_id, text=user_mention, parse_mode=ParseMode.MARKDOWN_V2)
+                        await self.bot.send_message(chat_id=chat_id, text=message_text)
+                    await self.bot.send_message(chat_id=chat_id, text=user_link)
 
         except Exception as e:
             print(f"Failed to send message: {e}")
@@ -463,13 +462,24 @@ class BotHandlers:
     async def callback_send_message(self, context: types.CallbackQuery):
         clients = await ClientRepository.list()
         templates = await TemplateRepository.get_available_templates()
-        user_id = context.from_user.id
-        username = context.from_user.username if context.from_user.username else None
-        order = await OrderRepository.create(initiator_telegram_id=user_id, username=username)
-        await context.bot.send_message(chat_id=context.from_user.id,
-                                       text=f"Началась рассылка сообщений для ордера {order.id}")
-        asyncio.create_task(self.send_messages_to_all_clients(clients, templates, user_id, order))  # noqa
-        await context.answer()
+        if not templates:
+            kb = [
+                [InlineKeyboardButton(text="Создать шаблон", callback_data="templates")],
+                [InlineKeyboardButton(text="Отмена ❌", callback_data="start")]
+            ]
+            keyboard = InlineKeyboardMarkup(inline_keyboard=kb, resize_keyboard=True)
+            await context.bot.send_message(chat_id=context.from_user.id,
+                                           text=f"Нет шаблонов для рассылки.", reply_markup=keyboard)
+            await context.answer()
+
+        else:
+            user_id = context.from_user.id
+            username = context.from_user.username if context.from_user.username else None
+            order = await OrderRepository.create(initiator_telegram_id=user_id, username=username)
+            await context.bot.send_message(chat_id=context.from_user.id,
+                                           text=f"Началась рассылка сообщений для ордера {order.id}")
+            asyncio.create_task(self.send_messages_to_all_clients(clients, templates, user_id, order))  # noqa
+            await context.answer()
 
     async def send_messages_to_all_clients(self, clients: List[models.Client], templates: List[models.Template],
                                            user_id, order: models.Order):
@@ -477,7 +487,7 @@ class BotHandlers:
         while clients:
             client = clients.pop(0)
             template = random.choice(templates)
-            status_message = await sender.send_message_to_member(template, client.username, client.phone)
+            status_message = await sender.send_message_to_member(template, client)
             if status_message.get("status") == 403 or status_message.get("status") == 401:
                 clients.append(client)
             elif status_message.get("status") == 200:

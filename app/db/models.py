@@ -11,8 +11,9 @@ class Client(BaseModel):
     __tablename__ = 'client'
 
     id: Mapped[int] = Column(Integer, primary_key=True, index=True)
-    username: Mapped[str] = Column(String, index=True)
-    phone: Mapped[str] = Column(String, index=True)
+    username: Mapped[str] = Column(String, index=True, nullable=True)
+    phone: Mapped[str] = Column(String, index=True, nullable=True)
+    telegram_id: Mapped[int] = Column(BigInteger, nullable=True)
 
     order_statuses: Mapped[List["OrderStatus"]] = relationship("OrderStatus", back_populates="client",
                                                                cascade="all, delete-orphan",

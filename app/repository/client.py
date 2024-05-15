@@ -1,3 +1,4 @@
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
@@ -28,6 +29,12 @@ class ClientRepository:
             return result.scalars().first()
 
     @classmethod
+    async def get_client_by_tg_id(cls, telegram_id: int):
+        async with db_session() as session:
+            result = await session.execute(select(Client).filter(Client.telegram_id == telegram_id))
+            return result.scalars().first()
+
+    @classmethod
     async def create_client(cls, client_data: dict):
         async with db_session() as session:
             client = Client(**client_data)
@@ -35,3 +42,14 @@ class ClientRepository:
             await session.commit()
             await session.refresh(client)
             return client
+
+    @staticmethod
+    async def update(phone: str, **kwargs):
+        async with db_session() as session:
+            print('-----------------------------------------------------------------')
+            print(type(phone), phone)
+            print(kwargs)
+            print('-----------------------------------------------------------------')
+            query = update(Client).where(Client.phone == phone).values(**kwargs)
+            await session.execute(query)
+            await session.commit()

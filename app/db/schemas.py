@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class ClientBase(BaseModel):
     username: str
     phone: str
+    telegram_id: int
     order_statuses: List['OrderStatus']
 
 
@@ -18,6 +19,7 @@ class Client(ClientBase):
     id: int
     username: str
     phone: str
+    telegram_id: int
     order_statuses: List['OrderStatus']
 
     class Config:

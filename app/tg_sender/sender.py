@@ -11,7 +11,8 @@ from telethon.tl.functions.contacts import ImportContactsRequest
 from telethon.tl.types import InputPhoneContact, PeerUser, MessageMediaPhoto, MessageMediaDocument, PhotoSize, \
     DocumentAttributeFilename
 
-from app.db.models import Sender
+from app.db.models import Sender, Client
+from app.repository.client import ClientRepository
 from app.repository.sender import SenderRepository
 from app.config import settings
 from app.repository.tg_admin import TgAdminRepository
@@ -162,9 +163,11 @@ class TgSenderManager(metaclass=SingletonMeta):
 
         return client
 
-    async def send_message_to_member(self, template, username: str = None, phone: str = None):
+    async def send_message_to_member(self, template, client: Client):
+        phone = client.phone
+        username = client.username
         sender = await SenderRepository.get_available_sender()
-        client = self.active_clients.get(sender.id)
+        sender_client = self.active_clients.get(sender.id)
 
         try:
             contact_data = None
@@ -172,7 +175,7 @@ class TgSenderManager(metaclass=SingletonMeta):
                 phone = phone.replace(" ", "").replace("+", "")
                 if phone.isnumeric():
                     contact = InputPhoneContact(client_id=0, phone=phone, first_name="NewUser", last_name=" ")
-                    result = await client(ImportContactsRequest([contact]))
+                    result = await sender_client(ImportContactsRequest([contact]))
                     if not result.imported:
                         self.status_message = {"status": 404, "message": f"Lead {phone} not imported."}
                         return self.status_message
@@ -182,7 +185,7 @@ class TgSenderManager(metaclass=SingletonMeta):
                     return self.status_message
             elif phone and isinstance(phone, int):
                 contact = InputPhoneContact(client_id=0, phone=str(phone), first_name="Andrey", last_name=" ")
-                result = await client(ImportContactsRequest([contact]))
+                result = await sender_client(ImportContactsRequest([contact]))
                 if not result.imported:
                     self.status_message = {"status": 404, "message": f"Lead {phone} not imported."}
                     return self.status_message
@@ -193,19 +196,20 @@ class TgSenderManager(metaclass=SingletonMeta):
                 self.status_message = {"status": 400, "message": "Lead username and phone number is None"}
                 return self.status_message
 
-            user = await client.get_input_entity(contact_data)
+            await ClientRepository.update(phone=client.phone, telegram_id=contact_data.id)
+            user = await sender_client.get_input_entity(contact_data)
             media_group = []
             if template.files:
                 for file in template.files:
                     file_path = os.path.join(self.media_folder, file.file_name)
                     if os.path.exists(file_path):
-                        uploaded_file = await client.upload_file(file_path)
+                        uploaded_file = await sender_client.upload_file(file_path)
                         media_group.append(uploaded_file)
 
             if media_group:
-                await client.send_file(user, media_group, caption=template.text)
+                await sender_client.send_file(user, media_group, caption=template.text)
             else:
-                await client.send_message(user, template.text)
+                await sender_client.send_message(user, template.text)
 
             await SenderRepository.update(
                 sender_id=sender.id,
