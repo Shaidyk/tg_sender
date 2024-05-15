@@ -189,9 +189,6 @@ class BotHandlers:
                         except Exception as e:
                             print(f"Failed to send media group: {e}")
 
-                        # for media_item in media:
-                        #     os.remove(media_item.media.path)  # Удаляем файл после отправки
-
                     if 'document' in message_data and message_data['document']:
                         for document in message_data['document']:
                             print(f"Sending document with file_path: {document['file_path']}")
@@ -202,7 +199,10 @@ class BotHandlers:
                                 print(f"Failed to send document: {e}")
                             os.remove(document['file_path'])
 
-                    if not media:
+                    if media:
+                        for media_item in media:
+                            os.remove(media_item.media.path)
+                    else:
                         await self.bot.send_message(chat_id=chat_id, text=message_text)
                     await self.bot.send_message(chat_id=chat_id, text=user_link)
 
