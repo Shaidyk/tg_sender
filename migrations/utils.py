@@ -4,10 +4,9 @@ from app.config import settings
 
 # Database creation.
 async def create_database_if_not_exists(database_name: str):
-    print(f"------------------------------------------------------------------{settings}")
     try:
         conn = await async_pg_connect(
-            host=settings.POSTGRES_DB,
+            host=settings.POSTGRES_HOST,
             port=settings.POSTGRES_PORT,
             user=settings.POSTGRES_USER,
             password=settings.POSTGRES_PASSWORD,
@@ -15,7 +14,7 @@ async def create_database_if_not_exists(database_name: str):
         )
     except InvalidCatalogNameError:
         sys_conn = await async_pg_connect(
-            host=settings.POSTGRES_DB,
+            host=settings.POSTGRES_HOST,
             port=settings.POSTGRES_PORT,
             user=settings.POSTGRES_USER,
             password=settings.POSTGRES_PASSWORD,
