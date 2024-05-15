@@ -9,23 +9,23 @@ from app.tg_sender.sender import TgSenderManager
 
 app = FastAPI()
 
-# bot = Bot(token=settings.TG_BOT_TOKEN)
-# dp = Dispatcher()
-# router = Router()
-#
-# handlers = BotHandlers(router, dp, bot)
-#
-# @app.on_event("startup")
-# async def init_account_manager():
-#     account_manager = TgSenderManager(handlers)
-#     await account_manager.load_and_init_clients()
-#     return account_manager
-#
-#
-# async def start_bot():
-#     await dp.start_polling(bot)
-#
-#
-# @app.on_event("startup")
-# async def startup_event():
-#     asyncio.create_task(start_bot())  # noqa
+bot = Bot(token=settings.TG_BOT_TOKEN)
+dp = Dispatcher()
+router = Router()
+
+handlers = BotHandlers(router, dp, bot)
+
+@app.on_event("startup")
+async def init_account_manager():
+    account_manager = TgSenderManager(handlers)
+    await account_manager.load_and_init_clients()
+    return account_manager
+
+
+async def start_bot():
+    await dp.start_polling(bot)
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(start_bot())  # noqa
