@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    container_name: app
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+
+  adminer:
+    container_name: adminer
+    build: ./adminer
+    restart: always
+    ports:
+      - "8083:8080"
+
+  db:
+    container_name: db
+    image: postgres:15.1-bullseye
+    env_file:
+      - ./.env
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
