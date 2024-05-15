@@ -4,6 +4,7 @@ from app.config import settings
 
 # Database creation.
 async def create_database_if_not_exists(database_name: str):
+    print(f"------------------------------------------------------------------{settings}")
     try:
         conn = await async_pg_connect(
             host=settings.POSTGRES_DB,
