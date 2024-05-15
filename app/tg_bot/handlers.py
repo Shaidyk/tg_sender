@@ -155,7 +155,6 @@ class BotHandlers:
                 username = from_user.get('username')
                 if username:
                     username = self.escape_markdown(username)
-                print(from_user, user_id, username)
                 client = await ClientRepository.get_client_by_tg_id(telegram_id=user_id)
                 user_link = f"New message from: t.me/{client.phone} ⬆"
 
@@ -188,6 +187,7 @@ class BotHandlers:
 
                     if media:
                         try:
+                            print("---------------------", media)
                             await self.bot.send_media_group(chat_id=chat_id, media=media)
                         except Exception as e:
                             print(f"Failed to send media group: {e}")
@@ -204,7 +204,7 @@ class BotHandlers:
                                 await self.bot.send_document(chat_id=chat_id, document=media_file, caption=message_text)
                             except Exception as e:
                                 print(f"Failed to send document: {e}")
-                            os.remove(document['file_path'])  # Удаляем файл после отправки
+                            os.remove(document['file_path'])
 
                     if not media:
                         await self.bot.send_message(chat_id=chat_id, text=message_text)
