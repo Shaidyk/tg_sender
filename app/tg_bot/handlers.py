@@ -188,6 +188,8 @@ class BotHandlers:
                     if media:
                         try:
                             print("---------------------", media)
+                            print("---------------------", media[0])
+                            print("---------------------", media[0].path)
                             await self.bot.send_media_group(chat_id=chat_id, media=media)
                         except Exception as e:
                             print(f"Failed to send media group: {e}")
