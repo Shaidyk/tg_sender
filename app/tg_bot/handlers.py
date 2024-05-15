@@ -158,13 +158,11 @@ class BotHandlers:
                 client = await ClientRepository.get_client_by_tg_id(telegram_id=user_id)
                 user_link = f"New message from: t.me/{client.phone} ⬆"
 
-                # Формируем текст сообщения
                 message_text = (
                     f"{message_data['text']}"
                 )
 
                 for chat_id in chat_ids:
-                    # Если есть фото или видео, отправляем их с текстом
                     media = []
 
                     if 'photo' in message_data and message_data['photo']:
@@ -187,17 +185,13 @@ class BotHandlers:
 
                     if media:
                         try:
-                            print("---------------------", media)
-                            print("---------------------", media[0])
-                            print("---------------------", media[0].path)
                             await self.bot.send_media_group(chat_id=chat_id, media=media)
                         except Exception as e:
                             print(f"Failed to send media group: {e}")
 
-                        for media_item in media:
-                            os.remove(media_item.media.path)  # Удаляем файл после отправки
+                        # for media_item in media:
+                        #     os.remove(media_item.media.path)  # Удаляем файл после отправки
 
-                    # Если есть документы, отправляем их отдельно
                     if 'document' in message_data and message_data['document']:
                         for document in message_data['document']:
                             print(f"Sending document with file_path: {document['file_path']}")
