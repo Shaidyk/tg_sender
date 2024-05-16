@@ -88,6 +88,7 @@ class TemplateStates(StatesGroup):
 
 
 class BotHandlers:
+
     def __init__(self, router: Router, dp: Dispatcher, bot: Bot):
         self.router = router
         self.dp = dp
@@ -532,6 +533,8 @@ class BotHandlers:
             templates = await TemplateRepository.list()
             results = []
             for template in inline_paginator(templates, offset):
+                if template.is_archived:
+                    continue
                 keyboard = get_template_action_keyboard(template=template)
                 title = f"{template.title} 🙂" if template.is_active else template.title
                 item = InlineQueryResultArticle(
@@ -572,7 +575,7 @@ class BotHandlers:
                                       state: FSMContext):
         keyboard = InlineKeyboardMarkup(inline_keyboard=[get_cancel_kb()])
         await state.set_state(TemplateStates.waiting_for_template_message)
-        await context.answer("Введите текст шаблона", reply_markup=keyboard)
+        await context.answer("Введите текст шаблона и добавьте медиа файлы.", reply_markup=keyboard)
 
     async def create_album_template(self, context: types.Union[types.Message, types.CallbackQuery], state: FSMContext,
                                     data: dict) -> None:
@@ -761,7 +764,7 @@ class BotHandlers:
     async def delete_template(self, context: types.CallbackQuery):
         template_id = context.data.split("_")[-1]
         template: models.Template = await TemplateRepository.get(int(template_id))
-        await TemplateRepository.delete(template_id=template.id)
+        await TemplateRepository.update(template_id=template.id, is_archived=True)
         message_text = f"Шаблон \"{template.title}\" удалён."
         await context.bot.send_message(chat_id=context.from_user.id, text=message_text)
         await context.answer()
@@ -782,4 +785,5 @@ class BotHandlers:
         # Экранирование символов для Markdown
         escape_chars = r'\_*`['
         return re.sub(f'([{escape_chars}])', r'\\\1', text)
+
     # endregion

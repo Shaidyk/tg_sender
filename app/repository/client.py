@@ -46,10 +46,6 @@ class ClientRepository:
     @staticmethod
     async def update(phone: str, **kwargs):
         async with db_session() as session:
-            print('-----------------------------------------------------------------')
-            print(type(phone), phone)
-            print(kwargs)
-            print('-----------------------------------------------------------------')
             query = update(Client).where(Client.phone == phone).values(**kwargs)
             await session.execute(query)
             await session.commit()
