@@ -157,7 +157,11 @@ class BotHandlers:
                 if username:
                     username = self.escape_markdown(username)
                 client = await ClientRepository.get_client_by_tg_id(telegram_id=user_id)
-                user_link = f"New message from: t.me/{client.phone} ⬆"
+                phone = client.phone
+                if not phone.startswith("+"):
+                    phone = f"+{phone}"
+
+                user_link = f"New message from: t.me/{phone} ⬆"
 
                 message_text = (
                     f"{message_data['text']}"
@@ -367,7 +371,6 @@ class BotHandlers:
         tg_account: TgAccountRegistrationManager = data.get('tg_account')
         tg_account.code = code
         status_message = await tg_account.start()
-        print(f"----------------------------{status_message.get('status')}: {status_message.get('message')}")
         if status_message.get('status') == 200:
             await self.create_account(message, state)
         elif status_message.get('status') == 401:
